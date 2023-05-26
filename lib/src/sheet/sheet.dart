@@ -12,6 +12,9 @@ class Sheet {
   late List<_Span?> _spanList;
   late Map<int, Map<int, Data>> _sheetData;
   late HeaderFooter? _headerFooter;
+  // TODO: move _relTargets out of sheet
+  Map<String, String> _relTargets = {};
+  late Drawing? _drawing;
 
   ///
   /// It will clone the object by changing the `this` reference of previous oldSheetObject and putting `new this` reference, with copying the values too
@@ -26,7 +29,8 @@ class Sheet {
             colWidthVal: oldSheetObject._colWidth,
             colAutoFitVal: oldSheetObject._colAutoFit,
             isRTLVal: oldSheetObject._isRTL,
-            headerFooter: oldSheetObject._headerFooter);
+            headerFooter: oldSheetObject._headerFooter,
+            relTargets: oldSheetObject._relTargets);
 
   Sheet._(Excel excel, String sheetName,
       {Map<int, Map<int, Data>>? sh,
@@ -37,7 +41,8 @@ class Sheet {
       bool? isRTLVal,
       List<double>? colWidthVal,
       List<bool>? colAutoFitVal,
-      HeaderFooter? headerFooter}) {
+      HeaderFooter? headerFooter,
+      Map<String, String>? relTargets}) {
     _excel = excel;
     _sheet = sheetName;
     _sheetData = <int, Map<int, Data>>{};
@@ -70,6 +75,9 @@ class Sheet {
     }
     if (colAutoFitVal != null) {
       _colAutoFit = List<bool>.from(colAutoFitVal);
+    }
+    if (relTargets != null) {
+      _relTargets = Map<String, String>.from(relTargets);
     }
 
     /// copy the data objects into a temp folder and then while putting it into `_sheetData` change the data objects references.

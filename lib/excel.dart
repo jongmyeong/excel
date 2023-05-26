@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
+import 'package:path/path.dart' as path;
 import 'package:xml/xml.dart';
 import 'src/web_helper/client_save_excel.dart'
     if (dart.library.html) 'src/web_helper/web_save_excel_browser.dart'
@@ -39,3 +40,6 @@ part 'src/sheet/cell_style.dart';
 part 'src/sheet/font_style.dart';
 part 'src/sheet/header_footer.dart';
 part 'src/sheet/border_style.dart';
+
+part 'src/drawings/drawings.dart';
+part 'src/drawings/one_cell_anchor.dart';

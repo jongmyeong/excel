@@ -501,6 +501,8 @@ class Parser {
     });
 
     _parseHeaderFooter(worksheet, sheetObject);
+    _parseSheetRelation(target!, sheetObject);
+    _parseDrawings(target, sheetObject);
 
     _excel._sheets[name] = sheet;
 
@@ -508,6 +510,62 @@ class Parser {
     _excel._xmlSheetId[name] = 'xl/$target';
 
     _normalizeTable(sheetObject);
+  }
+
+  _parseDrawings(String targetSheetFile, Sheet sheetObj) {
+    for (MapEntry<String, String> item in sheetObj._relTargets.entries) {
+      var file = _excel._archive.findFile('xl/${item.value}');
+      if (file == null) {
+        _damagedExcel();
+        continue;
+      }
+
+      file.decompress();
+      Drawing drawingObj = Drawing(sheetObj);
+      var document = XmlDocument.parse(utf8.decode(file.content));
+      document.findAllElements('xdr:oneCellAnchor').forEach((node) {
+        var xdrFrom = node.getElement('xdr:from');
+        String colStr = xdrFrom!.getElement('xdr:col')!.value!;
+        String rowStr = xdrFrom.getElement('xdr:row')!.value!;
+        var xdrPic = node.getElement('xdr:pic');
+        var xdrBlipFill = xdrPic!.getElement('xdr:blipFill');
+        String id = xdrBlipFill!.getElement('a:blip')!.getAttribute('r:embed')!;
+        OneCellAnchor oneCellAnchor =
+            OneCellAnchor(int.parse(colStr), int.parse(rowStr), id);
+        drawingObj.addOneCellAnchor(oneCellAnchor);
+      });
+
+      _parseDrawingRelation(item.value, drawingObj);
+    }
+  }
+
+  _parseDrawingRelation(String drawingPath, Drawing drawingObj) {
+    path.Context pContext = path.Context();
+    String basename = pContext.basename(drawingPath);
+    String dirname = pContext.dirname(drawingPath);
+    String relFilePath = pContext.join(dirname, "_rels", "$basename.rels");
+    var file = _excel._archive.findFile('xl/$relFilePath');
+
+    if (file == null) {
+      _damagedExcel();
+      return;
+    }
+
+    file.decompress();
+    var document = XmlDocument.parse(utf8.decode(file.content));
+
+    document.findAllElements('Relationship').forEach((node) {
+      String? id = node.getAttribute('Id');
+      String? target = node.getAttribute('Target');
+      if (target != null) {
+        switch (node.getAttribute('Type')) {
+          case _relationshipsImage:
+            if (id != null)
+              drawingObj._relTargets[id] = pContext.join(dirname, target);
+            break;
+        }
+      }
+    });
   }
 
   _parseRow(XmlElement node, Sheet sheetObject, String name) {
@@ -760,5 +818,33 @@ class Parser {
     final headerFooterElement = results.first;
 
     sheetObject.headerFooter = HeaderFooter.fromXmlElement(headerFooterElement);
+  }
+
+  void _parseSheetRelation(String targetSheetFile, Sheet sheetObject) {
+    path.Context pContext = path.Context();
+    String basename = pContext.basename(targetSheetFile);
+    String dirname = pContext.dirname(targetSheetFile);
+    String relFilePath = pContext.join(dirname, "_rels", "$basename.rels");
+    var file = _excel._archive.findFile('xl/$relFilePath');
+    if (file == null) {
+      _damagedExcel();
+      return;
+    }
+
+    file.decompress();
+    var document = XmlDocument.parse(utf8.decode(file.content));
+
+    document.findAllElements('Relationship').forEach((node) {
+      String? id = node.getAttribute('Id');
+      String? target = node.getAttribute('Target');
+      if (target != null) {
+        switch (node.getAttribute('Type')) {
+          case _relationshipsDrawing:
+            if (id != null)
+              sheetObject._relTargets[id] = pContext.join(dirname, target);
+            break;
+        }
+      }
+    });
   }
 }

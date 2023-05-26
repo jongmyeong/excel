@@ -46,6 +46,7 @@ class Excel {
 
   late String _stylesTarget;
   late String _sharedStringsTarget;
+  late Map<String, String> _drawingTargets;
 
   String? _defaultSheet;
   late Parser parser;
@@ -67,6 +68,7 @@ class Excel {
     _numFormats = <int>[];
     _stylesTarget = '';
     _sharedStringsTarget = '';
+    _drawingTargets = <String, String>{};
 
     _archive = archive;
     _sharedStrings = _SharedStringsMaintainer.instance;
