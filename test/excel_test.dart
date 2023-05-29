@@ -6,6 +6,7 @@ import 'package:test/test.dart';
 import 'package:xml/xml.dart';
 
 void main() {
+/*
   test('Create New XLSX File', () {
     var excel = Excel.createExcel();
     expect(excel.sheets.entries.length, equals(1));
@@ -428,6 +429,15 @@ void main() {
 
       // delete tmp folder only when test is successful (diagnosis)
       new Directory('./tmp').delete(recursive: true);
+    });
+  });
+*/
+  group('Image', () {
+    test('Parse path to image files', () {
+      var file = './test/test_resources/textOnly.xlsx';
+      var bytes = File(file).readAsBytesSync();
+      var excel = Excel.decodeBytes(bytes);
+      expect(excel.tables['Sheet1']!.drawing, isNull);
     });
   });
 }

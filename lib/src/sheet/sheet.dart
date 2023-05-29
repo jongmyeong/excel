@@ -181,6 +181,10 @@ class Sheet {
     return _data;
   }
 
+  Drawing? get drawing {
+    return _drawing;
+  }
+
   ///
   /// returns `2-D dynamic List` of the sheet cell data in that range.
   ///

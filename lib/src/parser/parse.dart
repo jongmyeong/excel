@@ -543,8 +543,9 @@ class Parser {
     path.Context pContext = path.Context();
     String basename = pContext.basename(drawingPath);
     String dirname = pContext.dirname(drawingPath);
-    String relFilePath = pContext.join(dirname, "_rels", "$basename.rels");
-    var file = _excel._archive.findFile('xl/$relFilePath');
+    String relFilePath =
+        pContext.join('xl', dirname, "_rels", "$basename.rels");
+    var file = _excel._archive.findFile(relFilePath);
 
     if (file == null) {
       _damagedExcel();
@@ -824,8 +825,9 @@ class Parser {
     path.Context pContext = path.Context();
     String basename = pContext.basename(targetSheetFile);
     String dirname = pContext.dirname(targetSheetFile);
-    String relFilePath = pContext.join(dirname, "_rels", "$basename.rels");
-    var file = _excel._archive.findFile('xl/$relFilePath');
+    String relFilePath =
+        pContext.join('xl', dirname, "_rels", "$basename.rels");
+    var file = _excel._archive.findFile(relFilePath);
     if (file == null) {
       _damagedExcel();
       return;
