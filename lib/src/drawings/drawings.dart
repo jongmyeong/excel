@@ -18,7 +18,18 @@ class Drawing {
     return _oneCellAnchors;
   }
 
-  Map<String, String> get relTargets {
-    return _relTargets;
+  bool writeFillBlip(String blipId, OutputStreamBase output) {
+    String? value = _relTargets[blipId];
+    if (value == null) {
+      return false;
+    }
+
+    var file = _sheet._excel._archive.findFile(value);
+    if (file == null) {
+      return false;
+    }
+
+    file.writeContent(output);
+    return true;
   }
 }

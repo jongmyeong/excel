@@ -10,4 +10,16 @@ class OneCellAnchor {
       : _col = col,
         _row = row,
         _blipFillId = blipFillId;
+
+  int get col {
+    return _col;
+  }
+
+  int get row {
+    return _row;
+  }
+
+  String get blipFillId {
+    return _blipFillId;
+  }
 }

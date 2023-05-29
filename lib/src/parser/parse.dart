@@ -515,10 +515,8 @@ class Parser {
 
   _parseDrawings(String targetSheetFile, Sheet sheetObj,
       Map<String, String> sheetRelation) {
-    path.Context pContext = path.Context(style: path.Style.posix);
     for (MapEntry<String, String> item in sheetRelation.entries) {
-      String drawingPath = pContext.normalize(pContext.join('xl', item.value));
-      var file = _excel._archive.findFile(drawingPath);
+      var file = _excel._archive.findFile(item.value);
       if (file == null) {
         _damagedExcel();
         continue;
@@ -547,8 +545,8 @@ class Parser {
     path.Context pContext = path.Context(style: path.Style.posix);
     String basename = pContext.basename(drawingPath);
     String dirname = pContext.dirname(drawingPath);
-    String relFilePath = pContext
-        .normalize(pContext.join('xl', dirname, "_rels", "$basename.rels"));
+    String relFilePath =
+        pContext.normalize(pContext.join(dirname, "_rels", "$basename.rels"));
     var file = _excel._archive.findFile(relFilePath);
 
     if (file == null) {
@@ -847,7 +845,9 @@ class Parser {
       if (target != null) {
         switch (node.getAttribute('Type')) {
           case _relationshipsDrawing:
-            if (id != null) sheetRelation[id] = pContext.join(dirname, target);
+            if (id != null)
+              sheetRelation[id] =
+                  pContext.normalize(pContext.join('xl', dirname, target));
             break;
         }
       }
