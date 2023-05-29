@@ -13,4 +13,12 @@ class Drawing {
     anchor._drawing = this;
     _oneCellAnchors.add(anchor);
   }
+
+  List<OneCellAnchor> get oneCellAnchors {
+    return _oneCellAnchors;
+  }
+
+  Map<String, String> get relTargets {
+    return _relTargets;
+  }
 }

@@ -501,8 +501,9 @@ class Parser {
     });
 
     _parseHeaderFooter(worksheet, sheetObject);
-    _parseSheetRelation(target!, sheetObject);
-    _parseDrawings(target, sheetObject);
+    Map<String, String> sheetRelation =
+        _parseSheetRelation(target!, sheetObject);
+    _parseDrawings(target, sheetObject, sheetRelation);
 
     _excel._sheets[name] = sheet;
 
@@ -512,9 +513,12 @@ class Parser {
     _normalizeTable(sheetObject);
   }
 
-  _parseDrawings(String targetSheetFile, Sheet sheetObj) {
-    for (MapEntry<String, String> item in sheetObj._relTargets.entries) {
-      var file = _excel._archive.findFile('xl/${item.value}');
+  _parseDrawings(String targetSheetFile, Sheet sheetObj,
+      Map<String, String> sheetRelation) {
+    path.Context pContext = path.Context(style: path.Style.posix);
+    for (MapEntry<String, String> item in sheetRelation.entries) {
+      String drawingPath = pContext.normalize(pContext.join('xl', item.value));
+      var file = _excel._archive.findFile(drawingPath);
       if (file == null) {
         _damagedExcel();
         continue;
@@ -525,8 +529,8 @@ class Parser {
       var document = XmlDocument.parse(utf8.decode(file.content));
       document.findAllElements('xdr:oneCellAnchor').forEach((node) {
         var xdrFrom = node.getElement('xdr:from');
-        String colStr = xdrFrom!.getElement('xdr:col')!.value!;
-        String rowStr = xdrFrom.getElement('xdr:row')!.value!;
+        String colStr = xdrFrom!.getElement('xdr:col')!.innerText;
+        String rowStr = xdrFrom.getElement('xdr:row')!.innerText;
         var xdrPic = node.getElement('xdr:pic');
         var xdrBlipFill = xdrPic!.getElement('xdr:blipFill');
         String id = xdrBlipFill!.getElement('a:blip')!.getAttribute('r:embed')!;
@@ -540,15 +544,14 @@ class Parser {
   }
 
   _parseDrawingRelation(String drawingPath, Drawing drawingObj) {
-    path.Context pContext = path.Context();
+    path.Context pContext = path.Context(style: path.Style.posix);
     String basename = pContext.basename(drawingPath);
     String dirname = pContext.dirname(drawingPath);
-    String relFilePath =
-        pContext.join('xl', dirname, "_rels", "$basename.rels");
+    String relFilePath = pContext
+        .normalize(pContext.join('xl', dirname, "_rels", "$basename.rels"));
     var file = _excel._archive.findFile(relFilePath);
 
     if (file == null) {
-      _damagedExcel();
       return;
     }
 
@@ -562,7 +565,8 @@ class Parser {
         switch (node.getAttribute('Type')) {
           case _relationshipsImage:
             if (id != null)
-              drawingObj._relTargets[id] = pContext.join(dirname, target);
+              drawingObj._relTargets[id] =
+                  pContext.normalize(pContext.join(dirname, target));
             break;
         }
       }
@@ -821,16 +825,17 @@ class Parser {
     sheetObject.headerFooter = HeaderFooter.fromXmlElement(headerFooterElement);
   }
 
-  void _parseSheetRelation(String targetSheetFile, Sheet sheetObject) {
-    path.Context pContext = path.Context();
+  Map<String, String> _parseSheetRelation(
+      String targetSheetFile, Sheet sheetObject) {
+    Map<String, String> sheetRelation = {};
+    path.Context pContext = path.Context(style: path.Style.posix);
     String basename = pContext.basename(targetSheetFile);
     String dirname = pContext.dirname(targetSheetFile);
     String relFilePath =
         pContext.join('xl', dirname, "_rels", "$basename.rels");
     var file = _excel._archive.findFile(relFilePath);
     if (file == null) {
-      _damagedExcel();
-      return;
+      return sheetRelation;
     }
 
     file.decompress();
@@ -842,11 +847,12 @@ class Parser {
       if (target != null) {
         switch (node.getAttribute('Type')) {
           case _relationshipsDrawing:
-            if (id != null)
-              sheetObject._relTargets[id] = pContext.join(dirname, target);
+            if (id != null) sheetRelation[id] = pContext.join(dirname, target);
             break;
         }
       }
     });
+
+    return sheetRelation;
   }
 }

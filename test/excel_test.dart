@@ -6,7 +6,6 @@ import 'package:test/test.dart';
 import 'package:xml/xml.dart';
 
 void main() {
-/*
   test('Create New XLSX File', () {
     var excel = Excel.createExcel();
     expect(excel.sheets.entries.length, equals(1));
@@ -431,13 +430,24 @@ void main() {
       new Directory('./tmp').delete(recursive: true);
     });
   });
-*/
+
   group('Image', () {
-    test('Parse path to image files', () {
+    test('Parse path an excel file with no image', () {
       var file = './test/test_resources/textOnly.xlsx';
       var bytes = File(file).readAsBytesSync();
       var excel = Excel.decodeBytes(bytes);
-      expect(excel.tables['Sheet1']!.drawing, isNull);
+      expect(excel.tables['Sheet1']!.drawing, isNotNull);
+      expect(excel.tables['Sheet1']!.drawing!.oneCellAnchors, isEmpty);
+      expect(excel.tables['Sheet1']!.drawing!.relTargets, isEmpty);
+    });
+
+    test('Parse path an excel file with images', () {
+      var file = './test/test_resources/simpleImage.xlsx';
+      var bytes = File(file).readAsBytesSync();
+      var excel = Excel.decodeBytes(bytes);
+      expect(excel.tables['Sheet1']!.drawing, isNotNull);
+      expect(excel.tables['Sheet1']!.drawing!.oneCellAnchors.length, equals(2));
+      expect(excel.tables['Sheet1']!.drawing!.relTargets.length, equals(2));
     });
   });
 }

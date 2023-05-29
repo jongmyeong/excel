@@ -12,8 +12,6 @@ class Sheet {
   late List<_Span?> _spanList;
   late Map<int, Map<int, Data>> _sheetData;
   late HeaderFooter? _headerFooter;
-  // TODO: move _relTargets out of sheet
-  Map<String, String> _relTargets = {};
   late Drawing? _drawing;
 
   ///
@@ -29,8 +27,7 @@ class Sheet {
             colWidthVal: oldSheetObject._colWidth,
             colAutoFitVal: oldSheetObject._colAutoFit,
             isRTLVal: oldSheetObject._isRTL,
-            headerFooter: oldSheetObject._headerFooter,
-            relTargets: oldSheetObject._relTargets);
+            headerFooter: oldSheetObject._headerFooter);
 
   Sheet._(Excel excel, String sheetName,
       {Map<int, Map<int, Data>>? sh,
@@ -75,9 +72,6 @@ class Sheet {
     }
     if (colAutoFitVal != null) {
       _colAutoFit = List<bool>.from(colAutoFitVal);
-    }
-    if (relTargets != null) {
-      _relTargets = Map<String, String>.from(relTargets);
     }
 
     /// copy the data objects into a temp folder and then while putting it into `_sheetData` change the data objects references.
