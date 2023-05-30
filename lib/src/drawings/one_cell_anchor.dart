@@ -1,7 +1,6 @@
 part of excel;
 
 class OneCellAnchor {
-  late Drawing _drawing;
   int _col;
   int _row;
   String _blipFillId;

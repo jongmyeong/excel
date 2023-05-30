@@ -3,7 +3,7 @@ library excel;
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:archive/archive.dart';
+import 'package:archive/archive_io.dart';
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:path/path.dart' as path;

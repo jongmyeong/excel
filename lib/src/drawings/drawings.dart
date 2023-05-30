@@ -1,8 +1,10 @@
 part of excel;
 
+const MAX_COL = 16384;
+
 class Drawing {
   Sheet _sheet;
-  List<OneCellAnchor> _oneCellAnchors = [];
+  Map<int, OneCellAnchor> _oneCellAnchors = {};
   Map<String, String> _relTargets = {};
 
   Drawing(Sheet sheet) : _sheet = sheet {
@@ -10,26 +12,45 @@ class Drawing {
   }
 
   void addOneCellAnchor(OneCellAnchor anchor) {
-    anchor._drawing = this;
-    _oneCellAnchors.add(anchor);
+    int index = anchor.row * MAX_COL + anchor.col;
+    _oneCellAnchors[index] = anchor;
   }
 
-  List<OneCellAnchor> get oneCellAnchors {
-    return _oneCellAnchors;
+  OneCellAnchor? getOneCellAnchors(int row, int col) {
+    int index = row * MAX_COL + col;
+    if (_oneCellAnchors.containsKey(index)) {
+      return _oneCellAnchors[index];
+    }
+    return null;
   }
 
-  bool writeFillBlip(String blipId, OutputStreamBase output) {
+  String saveFillBlipIfFound(int row, int col, String outputPath) {
+    OneCellAnchor? oca = getOneCellAnchors(row, col);
+    if (oca == null) {
+      return "";
+    }
+
+    return writeFillBlip(oca.blipFillId, outputPath);
+  }
+
+  String writeFillBlip(String blipId, String outputPath) {
     String? value = _relTargets[blipId];
     if (value == null) {
-      return false;
+      return "";
     }
 
     var file = _sheet._excel._archive.findFile(value);
     if (file == null) {
-      return false;
+      return "";
     }
 
-    file.writeContent(output);
-    return true;
+    path.Context pContext = path.Context(style: path.Style.posix);
+    String extension = pContext.extension(value);
+
+    outputPath += extension;
+    OutputFileStream ofs = OutputFileStream(outputPath);
+    file.writeContent(ofs);
+    ofs.close();
+    return outputPath;
   }
 }
